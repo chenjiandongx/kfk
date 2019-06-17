@@ -576,6 +576,6 @@ func (pom *partitionOffsetManager) handleError(err error) {
 
 func (pom *partitionOffsetManager) release() {
 	pom.releaseOnce.Do(func() {
-		close(pom.errors)
+		go close(pom.errors)
 	})
 }

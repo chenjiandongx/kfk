@@ -288,8 +288,7 @@ func (client *client) Partitions(topic string) ([]int32, error) {
 		partitions = client.cachedPartitions(topic, allPartitions)
 	}
 
-	// no partitions found after refresh metadata
-	if len(partitions) == 0 {
+	if partitions == nil {
 		return nil, ErrUnknownTopicOrPartition
 	}
 
