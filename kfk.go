@@ -10,8 +10,6 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -32,83 +30,7 @@ const (
 var (
 	brokerAddr   = defaultBrokerAddr
 	tickInterval = defaultInterval
-	mongoUri     string
-	mgoClient    *MongoClient
 )
-
-func IsUseMongo() bool {
-	return mongoUri != ""
-}
-
-type MongoClient struct {
-	db *mgo.Session
-}
-
-func NewMongoClient() *MongoClient {
-	session, err := mgo.Dial(mongoUri)
-	if err != nil {
-		logrus.Fatalf("failed to init mongo client")
-	}
-	logrus.Info("init mongodb client finished.")
-	return &MongoClient{session}
-}
-
-func (m *MongoClient) SaveTopics(topics []*Topic, timestamp int64) (err error) {
-	coll := m.db.DB(defaultDName).C(collectTopics)
-	for i := 0; i < len(topics); i++ {
-		if err = coll.Insert(bson.M{
-			"timestamp":         timestamp,
-			"name":              topics[i].Name,
-			"partitions":        topics[i].Partitions,
-			"subscribers":       topics[i].Subscribers,
-			"available_offsets": topics[i].AvailableOffsets,
-			"logsize":           topics[i].LogSize,
-			"next_offsets":      topics[i].NextOffsets,
-			"offset":            topics[i].Offsets,
-		}); err != nil {
-			return
-		}
-	}
-	return
-}
-
-func (m *MongoClient) SaveSubscriber(subscriber []Subscriber, timestamp int64) (err error) {
-	coll := m.db.DB(defaultDName).C(collectSubscribers)
-	for i := 0; i < len(subscriber); i++ {
-		_, err = coll.Upsert(
-			bson.M{"group_id": subscriber[i].GroupID},
-			bson.M{
-				"timestamp": timestamp,
-				"group_id":  subscriber[i].GroupID,
-				"topics":    subscriber[i].Topic,
-			},
-		)
-		if err != nil {
-			return
-		}
-	}
-	return
-}
-
-func (m *MongoClient) SaveBrokers(brokers Brokers, timestamp int64) error {
-	_, err := m.db.DB(defaultDName).C(collectBrokers).Upsert(
-		bson.M{"_id": defaultBrokerID},
-		bson.M{
-			"_id":        defaultBrokerID,
-			"timestamp":  timestamp,
-			"members":    brokers.Members,
-			"controller": brokers.Controller,
-		},
-	)
-	return err
-}
-
-func (m *MongoClient) PingMongo() {
-	if m.db.Ping() != nil {
-		logrus.Warnf("could not connect mongo")
-		m.db.Refresh()
-	}
-}
 
 func init() {
 	if os.Getenv(envBrokerAddr) != "" {
@@ -139,6 +61,12 @@ type Subscriber struct {
 	Topic   []string `json:"topics"`
 }
 
+type TopicSubscriber struct {
+	NextOffsets []int64 `json:"next_offsets"`
+	Offset      int64   `json:"offset"`
+	GroupID     string  `json:"group_id"`
+}
+
 type Subscribers struct {
 	Items  []Subscriber
 	filter map[string]int
@@ -162,24 +90,12 @@ func (s *Subscribers) Add(groupID, topic string) {
 	})
 }
 
-type NextOffset struct {
-	Subscriber string  `json:"subscriber"`
-	Offsets    []int64 `json:"partition_next_offsets"`
-}
-
-type Offset struct {
-	Subscriber string `json:"subscriber"`
-	Count      int64  `json:"count"`
-}
-
 type Topic struct {
-	Name             string        `json:"name"`
-	Partitions       []int32       `json:"partitions"`
-	Subscribers      []string      `json:"subscribers"`
-	AvailableOffsets []int64       `json:"available_offsets"`
-	LogSize          int64         `json:"logsize"`
-	NextOffsets      []*NextOffset `json:"next_offsets"`
-	Offsets          []*Offset     `json:"offset"`
+	Name             string             `json:"name"`
+	Partitions       []int32            `json:"partitions"`
+	Subscribers      []*TopicSubscriber `json:"subscribers"`
+	AvailableOffsets []int64            `json:"available_offsets"`
+	LogSize          int64              `json:"logsize"`
 }
 
 type Topics struct {
@@ -192,29 +108,26 @@ func (t *Topics) AddItem(item *Topic) {
 	t.Items = append(t.Items, item)
 }
 
-func (t *Topics) AddSubscriber(name, subscriber string) {
-	if idx, ok := t.filter[name]; ok {
-		for i := 0; i < len(t.Items[idx].Subscribers); i++ {
-			if t.Items[idx].Subscribers[i] == subscriber {
+func (t *Topics) AddSubscriber(topicName, subscriber string) {
+	if idx, ok := t.filter[topicName]; ok {
+		sub := t.Items[idx].Subscribers
+		for i := 0; i < len(sub); i++ {
+			if sub[i].GroupID == subscriber {
 				return
 			}
 		}
-		t.Items[idx].Subscribers = append(t.Items[idx].Subscribers, subscriber)
+		sub = append(sub, &TopicSubscriber{GroupID: subscriber})
 	}
 }
 
-func (t *Topics) AddNextOffsets(idx int, sub string, offset int64) {
-	for i := 0; i < len(t.Items[idx].NextOffsets); i++ {
-		if t.Items[idx].NextOffsets[i].Subscriber == sub {
-			t.Items[idx].NextOffsets[i].Offsets = append(t.Items[idx].NextOffsets[i].Offsets, offset)
+func (t *Topics) AddNextOffsets(idx int, subscriber string, offset int64) {
+	sub := t.Items[idx].Subscribers
+	for i := 0; i < len(sub); i++ {
+		if sub[i].GroupID == subscriber {
+			sub[i].NextOffsets = append(sub[i].NextOffsets, offset)
 			return
 		}
 	}
-
-	t.Items[idx].NextOffsets = append(
-		t.Items[idx].NextOffsets,
-		&NextOffset{Subscriber: sub, Offsets: []int64{offset}},
-	)
 }
 
 type Metrics struct {
@@ -312,9 +225,7 @@ func (m *KafkaMonitor) Refresh() {
 		m.metrics.Topics.AddItem(&Topic{
 			Name:        topics[i],
 			Partitions:  partitions,
-			Subscribers: []string{},
-			NextOffsets: []*NextOffset{},
-			Offsets:     []*Offset{},
+			Subscribers: []*TopicSubscriber{},
 		})
 	}
 
@@ -408,8 +319,7 @@ func (m *KafkaMonitor) refreshNextOffsets() {
 
 		// topic: subscribers -> 1 : N
 		for j := 0; j < len(topic.Subscribers); j++ {
-			sub := topic.Subscribers[j]
-			manager, err := sarama.NewOffsetManagerFromClient(sub, m.kafkaClient)
+			manager, err := sarama.NewOffsetManagerFromClient(topic.Subscribers[j].GroupID, m.kafkaClient)
 			if err != nil {
 				logrus.Warnf("manager client error: %v", err)
 				continue
@@ -424,7 +334,7 @@ func (m *KafkaMonitor) refreshNextOffsets() {
 				}
 
 				offset, _ := mp.NextOffset()
-				m.metrics.Topics.AddNextOffsets(i, sub, offset)
+				m.metrics.Topics.AddNextOffsets(i, topic.Subscribers[j].GroupID, offset)
 			}
 		}
 	}
@@ -445,19 +355,15 @@ func (m *KafkaMonitor) summary() {
 		m.metrics.Topics.Items[i].LogSize = sumAvailable
 
 		// topic Next offset -> Offset
-		for _, item := range topic.NextOffsets {
+		for _, item := range topic.Subscribers {
 			sumNext := int64(0)
 
-			for j := 0; j < len(item.Offsets); j++ {
-				if item.Offsets[j] != -1 {
-					sumNext += item.Offsets[j]
+			for j := 0; j < len(item.NextOffsets); j++ {
+				if item.NextOffsets[j] != -1 {
+					sumNext += item.NextOffsets[j]
 				}
 			}
-
-			m.metrics.Topics.Items[i].Offsets = append(
-				m.metrics.Topics.Items[i].Offsets,
-				&Offset{Subscriber: item.Subscriber, Count: sumNext},
-			)
+			item.Offset = sumNext
 		}
 	}
 
