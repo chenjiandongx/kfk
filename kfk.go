@@ -110,21 +110,19 @@ func (t *Topics) AddItem(item *Topic) {
 
 func (t *Topics) AddSubscriber(topicName, subscriber string) {
 	if idx, ok := t.filter[topicName]; ok {
-		sub := t.Items[idx].Subscribers
-		for i := 0; i < len(sub); i++ {
-			if sub[i].GroupID == subscriber {
+		for i := 0; i < len(t.Items[idx].Subscribers); i++ {
+			if t.Items[idx].Subscribers[i].GroupID == subscriber {
 				return
 			}
 		}
-		sub = append(sub, &TopicSubscriber{GroupID: subscriber})
+		t.Items[idx].Subscribers = append(t.Items[idx].Subscribers, &TopicSubscriber{GroupID: subscriber})
 	}
 }
 
 func (t *Topics) AddNextOffsets(idx int, subscriber string, offset int64) {
-	sub := t.Items[idx].Subscribers
-	for i := 0; i < len(sub); i++ {
-		if sub[i].GroupID == subscriber {
-			sub[i].NextOffsets = append(sub[i].NextOffsets, offset)
+	for i := 0; i < len(t.Items[idx].Subscribers); i++ {
+		if t.Items[idx].Subscribers[i].GroupID == subscriber {
+			t.Items[idx].Subscribers[i].NextOffsets = append(t.Items[idx].Subscribers[i].NextOffsets, offset)
 			return
 		}
 	}
