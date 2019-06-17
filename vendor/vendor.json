@@ -1,0 +1,115 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "IgQxR/QxAn/EbXzHoz8aHSxQ/xg=",
+			"path": "github.com/DataDog/zstd",
+			"revision": "1e382f59b41eebd6f592c5db4fd1958ec38a0eba",
+			"revisionTime": "2019-01-02T10:31:57Z"
+		},
+		{
+			"checksumSHA1": "Fm2TJy3GncubDCRmSFjH1s5sXXo=",
+			"path": "github.com/Shopify/sarama",
+			"revision": "ee572b341855ad2b3e80867cf168fbc16b1f0a91",
+			"revisionTime": "2019-04-01T20:36:50Z"
+		},
+		{
+			"checksumSHA1": "CSPbwbyzqA6sfORicn4HFtIhF/c=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "d8f796af33cc11cb798c1aaeb27a4ebc5099927d",
+			"revisionTime": "2018-08-30T19:11:22Z"
+		},
+		{
+			"checksumSHA1": "y2Kh4iPlgCPXSGTCcFpzePYdzzg=",
+			"path": "github.com/eapache/go-resiliency/breaker",
+			"revision": "842e16ec2c98ef0c59eebfe60d2d3500a793ba19",
+			"revisionTime": "2019-02-08T16:25:53Z"
+		},
+		{
+			"checksumSHA1": "w5itvm+eKlJJg3hGILnceM3sono=",
+			"path": "github.com/eapache/go-xerial-snappy",
+			"revision": "776d5712da21bc4762676d614db1d8a64f4238b0",
+			"revisionTime": "2018-08-14T17:44:37Z"
+		},
+		{
+			"checksumSHA1": "SJhV59StVXLFvLU0l9s0d00nV10=",
+			"path": "github.com/eapache/queue",
+			"revision": "093482f3f8ce946c05bcba64badd2c82369e084d",
+			"revisionTime": "2018-02-27T14:14:24Z"
+		},
+		{
+			"checksumSHA1": "L3HoHVqp2EaBSOqBxB7l0PTyu7g=",
+			"path": "github.com/golang/snappy",
+			"revision": "2a8bb927dd31d8daada140a5d09578521ce5c36a",
+			"revisionTime": "2019-02-18T23:22:22Z"
+		},
+		{
+			"checksumSHA1": "Aulh7C5SVOA4Jzt5eHNH6197Mbk=",
+			"path": "github.com/konsorten/go-windows-terminal-sequences",
+			"revision": "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e",
+			"revisionTime": "2019-02-26T22:47:05Z"
+		},
+		{
+			"checksumSHA1": "Avb7BxRfJM8aNQMqsvEmxQhjxts=",
+			"path": "github.com/pierrec/lz4",
+			"revision": "315a67e90e415bcdaff33057da191569bf4d8479",
+			"revisionTime": "2019-03-27T17:20:49Z"
+		},
+		{
+			"checksumSHA1": "YzBjaYp2pbrwPhT6XHY0CBSh71A=",
+			"path": "github.com/pierrec/lz4/internal/xxh32",
+			"revision": "315a67e90e415bcdaff33057da191569bf4d8479",
+			"revisionTime": "2019-03-27T17:20:49Z"
+		},
+		{
+			"checksumSHA1": "LmajbO3+qtbE7JA0MQ29PXbmKNM=",
+			"path": "github.com/rcrowley/go-metrics",
+			"revision": "3113b8401b8a98917cde58f8bbd42a1b1c03b1fd",
+			"revisionTime": "2018-10-16T18:43:25Z"
+		},
+		{
+			"checksumSHA1": "SVO+Zm6SNwWrpgyc6mcTXbH4aJ8=",
+			"path": "github.com/sirupsen/logrus",
+			"revision": "2a22dbedbad1fd454910cd1f44f210ef90c28464",
+			"revisionTime": "2019-05-18T13:52:02Z"
+		},
+		{
+			"checksumSHA1": "LaVpJr7XdV3R3yHgmxPGAjhnKg8=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "93c9922d18aeb82498a065f07aec7ad7fa60dfb7",
+			"revisionTime": "2019-06-10T16:23:19Z"
+		},
+		{
+			"checksumSHA1": "bS5Kp6YjeXz4nvvS55CqIBP+HzM=",
+			"path": "gopkg.in/mgo.v2",
+			"revision": "9856a29383ce1c59f308dd1cf0363a79b5bef6b5",
+			"revisionTime": "2018-07-05T11:36:04Z"
+		},
+		{
+			"checksumSHA1": "/xRHTpN8WOK4nmZjJ1f96ER1b/o=",
+			"path": "gopkg.in/mgo.v2/bson",
+			"revision": "9856a29383ce1c59f308dd1cf0363a79b5bef6b5",
+			"revisionTime": "2018-07-05T11:36:04Z"
+		},
+		{
+			"checksumSHA1": "XQsrqoNT1U0KzLxOFcAZVvqhLfk=",
+			"path": "gopkg.in/mgo.v2/internal/json",
+			"revision": "9856a29383ce1c59f308dd1cf0363a79b5bef6b5",
+			"revisionTime": "2018-07-05T11:36:04Z"
+		},
+		{
+			"checksumSHA1": "LEvMCnprte47qdAxWvQ/zRxVF1U=",
+			"path": "gopkg.in/mgo.v2/internal/sasl",
+			"revision": "9856a29383ce1c59f308dd1cf0363a79b5bef6b5",
+			"revisionTime": "2018-07-05T11:36:04Z"
+		},
+		{
+			"checksumSHA1": "+1WDRPaOphSCmRMxVPIPBV4aubc=",
+			"path": "gopkg.in/mgo.v2/internal/scram",
+			"revision": "9856a29383ce1c59f308dd1cf0363a79b5bef6b5",
+			"revisionTime": "2018-07-05T11:36:04Z"
+		}
+	],
+	"rootPath": "kfk"
+}
