@@ -56,15 +56,15 @@ type Brokers struct {
 	Controller string   `json:"controller"`
 }
 
-type Subscriber struct {
-	GroupID string   `json:"group_id"`
-	Topic   []string `json:"topics"`
-}
-
 type TopicSubscriber struct {
 	NextOffsets []int64 `json:"next_offsets"`
 	Offset      int64   `json:"offset"`
 	GroupID     string  `json:"group_id"`
+}
+
+type Subscriber struct {
+	GroupID string   `json:"group_id"`
+	Topic   []string `json:"topics"`
 }
 
 type Subscribers struct {

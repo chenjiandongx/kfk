@@ -16,7 +16,7 @@ func IsUseMongo() bool {
 }
 
 type MongoClient struct {
-	db *mgo.Session
+	sess *mgo.Session
 }
 
 func NewMongoClient() *MongoClient {
@@ -29,7 +29,7 @@ func NewMongoClient() *MongoClient {
 }
 
 func (m *MongoClient) SaveTopics(topics []*Topic, timestamp int64) (err error) {
-	coll := m.db.DB(defaultDName).C(collectTopics)
+	coll := m.sess.DB(defaultDName).C(collectTopics)
 	for i := 0; i < len(topics); i++ {
 		if err = coll.Insert(bson.M{
 			"timestamp":         timestamp,
@@ -46,7 +46,7 @@ func (m *MongoClient) SaveTopics(topics []*Topic, timestamp int64) (err error) {
 }
 
 func (m *MongoClient) SaveSubscriber(subscriber []Subscriber, timestamp int64) (err error) {
-	coll := m.db.DB(defaultDName).C(collectSubscribers)
+	coll := m.sess.DB(defaultDName).C(collectSubscribers)
 	for i := 0; i < len(subscriber); i++ {
 		_, err = coll.Upsert(
 			bson.M{"group_id": subscriber[i].GroupID},
@@ -64,7 +64,7 @@ func (m *MongoClient) SaveSubscriber(subscriber []Subscriber, timestamp int64) (
 }
 
 func (m *MongoClient) SaveBrokers(brokers Brokers, timestamp int64) error {
-	_, err := m.db.DB(defaultDName).C(collectBrokers).Upsert(
+	_, err := m.sess.DB(defaultDName).C(collectBrokers).Upsert(
 		bson.M{"_id": defaultBrokerID},
 		bson.M{
 			"_id":        defaultBrokerID,
@@ -77,8 +77,8 @@ func (m *MongoClient) SaveBrokers(brokers Brokers, timestamp int64) error {
 }
 
 func (m *MongoClient) PingMongo() {
-	if m.db.Ping() != nil {
+	if m.sess.Ping() != nil {
 		logrus.Warnf("could not connect mongo")
-		m.db.Refresh()
+		m.sess.Refresh()
 	}
 }
